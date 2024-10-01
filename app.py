@@ -32,9 +32,11 @@ config = read_config_yaml('config.yaml')
 BARCODE_HISTORY = config['BARCODE_HISTORY']
 BARCODE_STATUS = config['BARCODE_STATUS']
 BARCODE_RESET = config['BARCODE_RESET']
+BARCODE_CLEAR = config['BARCODE_CLEAR']
 RIFLE_DATA_PATH = config['RIFLE_DATA_PATH']
 PERSON_DATA_PATH = config['PERSON_DATA_PATH']
 HISTORY_DATA = config['HISTORY_DATA']
+UNIT_NAME = config['UNIT_NAME']
 
 if "input_text" not in st.session_state:
     st.session_state.input_text = ""
@@ -42,6 +44,9 @@ if "current_rifle" not in st.session_state:
     st.session_state.current_rifle = ""
 if "current_person" not in st.session_state:
     st.session_state.current_person = ""
+
+def example_header(content):
+     st.markdown(f'<p style="font-size: 80px;text-align: center;font-weight: bold;">{content}</p>', unsafe_allow_html=True)
 
 def example(color1, color2, color3, content):
      st.markdown(f'<p style="text-align:center;background-image: linear-gradient(to right,{color1}, {color2});color:{color3};font-size:36px;border-radius:0%;">{content}</p>', unsafe_allow_html=True)
@@ -77,9 +82,6 @@ def toggle_instock(rifle_barcode):
 def submit():
     st.session_state.input_text = st.session_state.widget
     st.session_state.widget = ""
-
-
-current_state = "โปรดแสกน Barcode"
 
 #read data
 df_rifle = pd.read_csv(RIFLE_DATA_PATH)
@@ -128,7 +130,10 @@ st.components.v1.html(
 
 ## check text input
 current_rifle = df_rifle[df_rifle['rifle_barcode']==input_text]
-df_history_current_rifle_barcode = df_history[df_history['rifle_barcode']==input_text]
+try:
+    df_history_current_rifle_barcode = df_history[df_history['rifle_barcode']==st.session_state.current_rifle['rifle_barcode']]
+except:
+    df_history_current_rifle_barcode = df_history[df_history['rifle_barcode']=='']
 current_person = df_person[df_person['person_barcode']==input_text]
 if current_rifle.shape[0]==1:
     st.session_state.current_rifle = dict(current_rifle.iloc[0])
@@ -138,26 +143,46 @@ if current_person.shape[0]==1:
 # history
 if input_text == BARCODE_HISTORY or input_text == '1':
     st.title('ประวัติการเบิกจ่ายอาวุธ')
+    if df_history_current_rifle_barcode.shape[0] != 0:
 
-    ims = []
-    for i in df_history['timestamp']:
-        image_path = 'data/images/' + i + '.jpg'
-        try:
-            im = img_to_base64(image_path)
-            ims.append(im)
-        except:
-            ims.append(image_path)
-    df_history['image'] = ims
-    st.data_editor(
-        df_history,
-        column_config={
-            "image": st.column_config.ImageColumn(
-                "Preview Image", help="Streamlit app preview screenshots"
-            )
-        },
-        hide_index=True,
-    )
-    
+        ims = []
+        for i in df_history_current_rifle_barcode['timestamp']:
+            image_path = 'data/images/' + i + '.jpg'
+            try:
+                im = img_to_base64(image_path)
+                ims.append(im)
+            except:
+                ims.append(image_path)
+        df_history_current_rifle_barcode['image'] = ims
+        st.data_editor(
+            df_history_current_rifle_barcode,
+            column_config={
+                "image": st.column_config.ImageColumn(
+                    "Preview Image", help="Streamlit app preview screenshots"
+                )
+            },
+            hide_index=True,
+        )
+    else:
+        ims = []
+        for i in df_history['timestamp']:
+            image_path = 'data/images/' + i + '.jpg'
+            try:
+                im = img_to_base64(image_path)
+                ims.append(im)
+            except:
+                ims.append(image_path)
+        df_history['image'] = ims
+        st.data_editor(
+            df_history,
+            column_config={
+                "image": st.column_config.ImageColumn(
+                    "Preview Image", help="Streamlit app preview screenshots"
+                )
+            },
+            hide_index=True,
+        )
+
 # status
 elif input_text == BARCODE_STATUS or input_text == '2':
     st.title('สถานภาพปัจจุบัน')
@@ -177,7 +202,20 @@ elif input_text == BARCODE_RESET or input_text == 'r':
 
 # main
 else:
+    #clear current weapon and person
+    if input_text == BARCODE_CLEAR or input_text == 'c':
+        st.session_state.current_rifle = ''
+        st.session_state.current_person = ''
+
     # head status
+    col1, col2, col3 = st.columns([1,8,1])
+    with col1:
+        st.image("data/logo.png", use_column_width=True)
+    with col2:
+        example_header(UNIT_NAME)
+    with col3:
+        pass
+     
     st.title('ระบบเบิกจ่ายอาวุธอัตโนมัติ')
     col1, col2, col3 = st.columns(3)
     col1.subheader(f':blue[สถานะอาวุธในคลัง]')
@@ -224,29 +262,6 @@ else:
         sta = 'โปรดแสกนอาวุธ'
 
     example('#ff6320','#eaff2f','#000000',sta)
-
-    # show history of rifle id
-    if df_history_current_rifle_barcode.shape[0] != 0:
-
-        ims = []
-        for i in df_history_current_rifle_barcode['timestamp']:
-            image_path = 'data/images/' + i + '.jpg'
-            try:
-                im = img_to_base64(image_path)
-                ims.append(im)
-            except:
-                ims.append(image_path)
-        df_history_current_rifle_barcode['image'] = ims
-        st.data_editor(
-            df_history_current_rifle_barcode,
-            column_config={
-                "image": st.column_config.ImageColumn(
-                    "Preview Image", help="Streamlit app preview screenshots"
-                )
-            },
-            hide_index=True,
-        )
-
 
     # complete state
     if st.session_state.current_rifle and st.session_state.current_person:
@@ -303,10 +318,7 @@ else:
             pygame.mixer.music.load("data/voices/out.mp3")
         pygame.mixer.music.play()
         while pygame.mixer.music.get_busy():
-            pygame.time.Clock().tick(10)
-                
-
-        # time.sleep(3)
+            pygame.time.Clock().tick(10)              
 
         st.rerun()
 

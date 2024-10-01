@@ -1,6 +1,8 @@
 BARCODE_HISTORY : '1'
 BARCODE_STATUS : '2'
 BARCODE_RESET : 'r'
+BARCODE_CLEAR : 'c'
 RIFLE_DATA_PATH : 'data/rifle_data.csv'
 PERSON_DATA_PATH : 'data/person_data.csv'
 HISTORY_DATA : 'data/data_history.csv'
+UNIT_NAME : 'ร้อย.๓ พัน.๒ รร.จปร.'
