@@ -7,10 +7,11 @@ python load_data_from_googlesheet.py
 ### 2.run app
 ```
 streamlit run app.py
+```
 
 ## Setuo kiosk on Ubuntu
 ### install chromium from ubuntu-store
-```
+
 sudo apt install chromium-browser
 ```
 ### In Startup Applications
