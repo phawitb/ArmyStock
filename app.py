@@ -3,8 +3,6 @@ import streamlit as st
 import pandas as pd
 import os
 from datetime import datetime
-import time
-from streamlit_navigation_bar import st_navbar
 import cv2
 import base64
 import pygame
@@ -15,8 +13,11 @@ def read_config_yaml(file_path):
         config = yaml.safe_load(config_file)
     return config
 
-
 st.set_page_config(layout="wide")
+with open( "style.css" ) as css:
+    st.markdown( f'<style>{css.read()}</style>' , unsafe_allow_html= True)
+
+
 
 config = read_config_yaml('config.yaml')
 BARCODE_HISTORY = config['BARCODE_HISTORY']
