@@ -1,8 +1,3 @@
-# A0805994,C1626001380,นนร.นนทภพ ทองประจง,True
-# A0719334,C1634901947,นนร.ชิษณุพงศ์ พรมดี,True
-# A0717905,C1634801205,นนร.คมกฤษ บุญเกิด,True
-# A0805963,C1633313229,นนร.ธีรเชษฐ์ ทองธนวัฒกุล,True
-
 import csv
 import streamlit as st
 import pandas as pd
@@ -13,16 +8,23 @@ from streamlit_navigation_bar import st_navbar
 import cv2
 import base64
 import pygame
+import yaml
+
+def read_config_yaml(file_path):
+    with open(file_path, 'r') as config_file:
+        config = yaml.safe_load(config_file)
+    return config
 
 
 st.set_page_config(layout="wide")
 
-BARCODE_HISTORY = '1'
-BARCODE_STATUS = '2'
-BARCODE_RESET = 'r'
-RIFLE_DATA_PATH = 'data/rifle_data.csv'
-PERSON_DATA_PATH = 'data/person_data.csv'
-HISTORY_DATA = 'data/data_history.csv'
+config = read_config_yaml('config.yaml')
+BARCODE_HISTORY = config['BARCODE_HISTORY']
+BARCODE_STATUS = config['BARCODE_STATUS']
+BARCODE_RESET = config['BARCODE_RESET']
+RIFLE_DATA_PATH = config['RIFLE_DATA_PATH']
+PERSON_DATA_PATH = config['PERSON_DATA_PATH']
+HISTORY_DATA = config['HISTORY_DATA']
 
 if "input_text" not in st.session_state:
     st.session_state.input_text = ""
@@ -142,7 +144,6 @@ if input_text == BARCODE_HISTORY:
         hide_index=True,
     )
     
-    # st.write(df_history)
 # status
 elif input_text == BARCODE_STATUS:
     st.title('สถานภาพปัจจุบัน')
@@ -154,16 +155,14 @@ elif input_text == BARCODE_STATUS:
         st.subheader(f'อาวุธนอกคลัง {len(rifles_out)} กระบอก')
         st.write(df_rifle[df_rifle['instock'] == False])
 
+# reset 
+elif input_text == BARCODE_RESET:
+    df_rifle['instock'] = True
+    df_rifle.to_csv(RIFLE_DATA_PATH, index=False)
+    st.title('reset complete!!')
 
-    # st.rerun()
 # main
 else:
-    # reset 
-    if input_text == BARCODE_RESET:
-        df_rifle['instock'] = True
-        df_rifle.to_csv(RIFLE_DATA_PATH, index=False)
-        time.sleep(3)
-
     # head status
     st.title('ระบบเบิกจ่ายอาวุธอัตโนมัติ')
     col1, col2, col3 = st.columns(3)
@@ -209,13 +208,11 @@ else:
         sta = 'โปรดแสกนบัตรประจำตัว'
     elif st.session_state.current_person:
         sta = 'โปรดแสกนอาวุธ'
-    # st.warning(sta)
-    # example('#1aa3ff','#00ff00','#ffffff',sta)
+
     example('#ff6320','#eaff2f','#000000',sta)
 
     # show history of rifle id
     if df_history_current_rifle_barcode.shape[0] != 0:
-        # st.table(df_history_current_rifle_barcode)
 
         ims = []
         for i in df_history_current_rifle_barcode['timestamp']:

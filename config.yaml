@@ -1,0 +1,6 @@
+BARCODE_HISTORY : '1'
+BARCODE_STATUS : '2'
+BARCODE_RESET : 'r'
+RIFLE_DATA_PATH : 'data/rifle_data.csv'
+PERSON_DATA_PATH : 'data/person_data.csv'
+HISTORY_DATA : 'data/data_history.csv'

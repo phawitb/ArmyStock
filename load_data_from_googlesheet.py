@@ -62,9 +62,16 @@ function getAllPersonData() {
 import os
 import requests
 import pandas as pd
+import yaml
 
-RIFLE_DATA_PATH = 'data/rifle_data.csv'
-PERSON_DATA_PATH = 'data/person_data.csv'
+def read_config_yaml(file_path):
+    with open(file_path, 'r') as config_file:
+        config = yaml.safe_load(config_file)
+    return config
+
+config = read_config_yaml('config.yaml')
+RIFLE_DATA_PATH = config['RIFLE_DATA_PATH']
+PERSON_DATA_PATH = config['PERSON_DATA_PATH']
 
 url = 'https://script.google.com/macros/s/AKfycbyODcsyYP4BF6Sdw01g4wOd0Mxs5ZNK5KSTFJhR7Rf0Px_xo4IQz2kcbeoqZzu0wwMpaQ/exec'
 
