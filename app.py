@@ -13,7 +13,7 @@ def read_config_yaml(file_path):
         config = yaml.safe_load(config_file)
     return config
 
-st.set_page_config(layout="wide")
+st.set_page_config(layout="wide", initial_sidebar_state="collapsed")
 with open( "style.css" ) as css:
     st.markdown( f'<style>{css.read()}</style>' , unsafe_allow_html= True)
 
@@ -99,7 +99,7 @@ rifles_in = df_rifle[df_rifle['instock'] == 'True']['rifle_barcode'].tolist()
 rifles_out = df_rifle[df_rifle['instock'] == 'False']['rifle_barcode'].tolist()
 
 # input text
-st.text_input("scan barcode", key="widget", on_change=submit)
+st.sidebar.text_input("scan barcode", key="widget", on_change=submit)
 input_text = st.session_state.input_text
 st.components.v1.html(
     f"""
@@ -300,7 +300,6 @@ else:
         # time.sleep(3)
 
         st.rerun()
-
 
 
 
