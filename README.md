@@ -17,6 +17,14 @@ install chromium from ubuntu-store
 ```
 sudo apt install chromium-browser
 ```
+```
+# edit config.yaml
+# edit and setup google sheet in load_data_from_googlesheet.py
+
+cd /home/phawit/Documents/ArmyStock
+pip install -r equirements.txt
+chmod +x run_streamlit.sh
+```
 ### In Startup Applications
 ```
 /home/phawit/Documents/ArmyStock/run_streamlit.sh
