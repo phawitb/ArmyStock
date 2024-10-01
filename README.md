@@ -9,16 +9,15 @@ python load_data_from_googlesheet.py
 streamlit run app.py
 
 ## Setuo kiosk on Ubuntu
-##### install chromium from ubuntu-store
+### install chromium from ubuntu-store
 ```
 sudo apt install chromium-browser
 ```
-#### In Startup Applications
+### In Startup Applications
 ```
 /home/phawit/Documents/ArmyStock/run_streamlit.sh
 ```
 
-```
 ### in code.gs
 ```
 setup_tutorial :: https://www.youtube.com/watch?v=r817RLqmLac
