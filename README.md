@@ -1,10 +1,10 @@
 # ArmyStock
 
-## 1.load data from sheet https://docs.google.com/spreadsheets/d/1qjwfbjsITCQXcdYV88soR3xk-NBUKpjGTuQ57IWG2Dc/edit?usp=sharing
+### 1.load data from sheet https://docs.google.com/spreadsheets/d/1qjwfbjsITCQXcdYV88soR3xk-NBUKpjGTuQ57IWG2Dc/edit?usp=sharing
 ```
 python load_data_from_googlesheet.py
 ```
-## 2.run app
+### 2.run app
 ```
 streamlit run app.py
 ```
@@ -19,7 +19,7 @@ sudo apt install chromium-browser
 /home/phawit/Documents/ArmyStock/run_streamlit.sh
 ```
 
-## in code.gs
+### in code.gs
 ```
 setup_tutorial :: https://www.youtube.com/watch?v=r817RLqmLac
 
