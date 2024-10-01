@@ -49,7 +49,7 @@ def example_header(content):
      st.markdown(f'<p style="font-size: 80px;text-align: center;font-weight: bold;">{content}</p>', unsafe_allow_html=True)
 
 def example(color1, color2, color3, content):
-     st.markdown(f'<p style="text-align:center;background-image: linear-gradient(to right,{color1}, {color2});color:{color3};font-size:36px;border-radius:0%;">{content}</p>', unsafe_allow_html=True)
+     st.markdown(f'<p style="text-align:center; height:60px; font-weight:bold; background-image:linear-gradient(to right,{color1}, {color2});color:{color3}; font-size:36px; border-radius:0%;">{content}</p>', unsafe_allow_html=True)
 
 def img_to_base64(image_path):
     with open(image_path, "rb") as image_file:
