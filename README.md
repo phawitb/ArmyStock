@@ -10,7 +10,10 @@ streamlit run app.py
 ```
 
 ## Setup kiosk on Ubuntu
-### install chromium from ubuntu-store
+### 
+```
+install chromium from ubuntu-store
+```
 ```
 sudo apt install chromium-browser
 ```
