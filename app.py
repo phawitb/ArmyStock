@@ -75,8 +75,12 @@ current_state = "โปรดแสกน Barcode"
 #read data
 df_rifle = pd.read_csv(RIFLE_DATA_PATH)
 df_person = pd.read_csv(PERSON_DATA_PATH)
+df_rifle = df_rifle.astype(str)
+df_person = df_person.astype(str)
+
 try:
     df_history = pd.read_csv(HISTORY_DATA)
+    df_history = df_history.astype(str)
 except:
     df_history = pd.DataFrame(columns=[
         'rifle_barcode', 
@@ -91,8 +95,8 @@ except:
     
 df_history = df_history.sort_values(by='timestamp',ascending=False)
 
-rifles_in = df_rifle[df_rifle['instock'] == True]['rifle_barcode'].tolist()
-rifles_out = df_rifle[df_rifle['instock'] == False]['rifle_barcode'].tolist()
+rifles_in = df_rifle[df_rifle['instock'] == 'True']['rifle_barcode'].tolist()
+rifles_out = df_rifle[df_rifle['instock'] == 'False']['rifle_barcode'].tolist()
 
 # input text
 st.text_input("scan barcode", key="widget", on_change=submit)
@@ -123,7 +127,7 @@ if current_person.shape[0]==1:
     st.session_state.current_person = dict(current_person.iloc[0])
 
 # history
-if input_text == BARCODE_HISTORY:
+if input_text == BARCODE_HISTORY or input_text == '1':
     st.title('ประวัติการเบิกจ่ายอาวุธ')
 
     ims = []
@@ -146,19 +150,19 @@ if input_text == BARCODE_HISTORY:
     )
     
 # status
-elif input_text == BARCODE_STATUS:
+elif input_text == BARCODE_STATUS or input_text == '2':
     st.title('สถานภาพปัจจุบัน')
     col1, col2 = st.columns(2)
     with col1:
         st.subheader(f'อาวุธในคลัง {len(rifles_in)} กระบอก')
-        st.write(df_rifle[df_rifle['instock'] == True])
+        st.write(df_rifle[df_rifle['instock'] == 'True'])
     with col2:
         st.subheader(f'อาวุธนอกคลัง {len(rifles_out)} กระบอก')
-        st.write(df_rifle[df_rifle['instock'] == False])
+        st.write(df_rifle[df_rifle['instock'] == 'False'])
 
 # reset 
-elif input_text == BARCODE_RESET:
-    df_rifle['instock'] = True
+elif input_text == BARCODE_RESET or input_text == 'r':
+    df_rifle['instock'] = 'True'
     df_rifle.to_csv(RIFLE_DATA_PATH, index=False)
     st.title('reset complete!!')
 
