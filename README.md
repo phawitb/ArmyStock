@@ -1,6 +1,6 @@
 # ArmyStock
 
-### 1.load data from sheet [https://www.youtube.com/watch?v=r817RLqmLac](https://docs.google.com/spreadsheets/d/1qjwfbjsITCQXcdYV88soR3xk-NBUKpjGTuQ57IWG2Dc/edit?usp=sharing)
+### 1.load data from sheet https://docs.google.com/spreadsheets/d/1qjwfbjsITCQXcdYV88soR3xk-NBUKpjGTuQ57IWG2Dc/edit?usp=sharing
 ```
 python load_data_from_sheet.py
 ```
