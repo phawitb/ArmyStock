@@ -8,16 +8,25 @@ import base64
 import pygame
 import yaml
 
-def read_config_yaml(file_path):
-    with open(file_path, 'r') as config_file:
-        config = yaml.safe_load(config_file)
-    return config
-
 st.set_page_config(layout="wide", initial_sidebar_state="collapsed")
 with open( "style.css" ) as css:
     st.markdown( f'<style>{css.read()}</style>' , unsafe_allow_html= True)
 
+st.markdown("""
+        <style>
+               .block-container {
+                    padding-top: 1rem;
+                    padding-bottom: 0rem;
+                    padding-left: 5rem;
+                    padding-right: 5rem;
+                }
+        </style>
+        """, unsafe_allow_html=True)
 
+def read_config_yaml(file_path):
+    with open(file_path, 'r') as config_file:
+        config = yaml.safe_load(config_file)
+    return config
 
 config = read_config_yaml('config.yaml')
 BARCODE_HISTORY = config['BARCODE_HISTORY']
