@@ -33,20 +33,21 @@ BARCODE_HISTORY = config['BARCODE_HISTORY']
 BARCODE_STATUS = config['BARCODE_STATUS']
 BARCODE_RESET = config['BARCODE_RESET']
 BARCODE_CLEAR = config['BARCODE_CLEAR']
-RIFLE_DATA_PATH = config['RIFLE_DATA_PATH']
+WEAPON_DATA_PATH = config['WEAPON_DATA_PATH']
 PERSON_DATA_PATH = config['PERSON_DATA_PATH']
-HISTORY_DATA = config['HISTORY_DATA']
+HISTORY_DATA_PATH = config['HISTORY_DATA_PATH']
 UNIT_NAME = config['UNIT_NAME']
+LOGO_PATH = config['LOGO_PATH']
 
 if "input_text" not in st.session_state:
     st.session_state.input_text = ""
-if "current_rifle" not in st.session_state:
-    st.session_state.current_rifle = ""
+if "current_weapon" not in st.session_state:
+    st.session_state.current_weapon = ""
 if "current_person" not in st.session_state:
     st.session_state.current_person = ""
 
 def example_header(content):
-     st.markdown(f'<p style="font-size: 80px;text-align: center;font-weight: bold;">{content}</p>', unsafe_allow_html=True)
+     st.markdown(f'<p style="font-size:80px;text-align: center;font-weight: bold;">{content}</p>', unsafe_allow_html=True)
 
 def example(color1, color2, color3, content):
      st.markdown(f'<p style="text-align:center; height:60px; font-weight:bold; background-image:linear-gradient(to right,{color1}, {color2});color:{color3}; font-size:36px; border-radius:0%;">{content}</p>', unsafe_allow_html=True)
@@ -57,23 +58,23 @@ def img_to_base64(image_path):
     data_url = f"data:image/png;base64,{encoded_string}"
     return data_url
 
-def toggle_instock(rifle_barcode):
+def toggle_instock(weapon_barcode):
     data = []
     sta = []
-    with open(RIFLE_DATA_PATH, mode='r', encoding='utf-8') as file:
+    with open(WEAPON_DATA_PATH, mode='r', encoding='utf-8') as file:
         reader = csv.reader(file)
         header = next(reader)  
         data = [header]  
         for row in reader:
-            if row[0] == rifle_barcode:
-                if row[3] == 'True':
-                    row[3] = 'False'
-                elif row[3] == 'False':
-                    row[3] = 'True'
-                sta = row[3]
+            if row[0] == weapon_barcode:
+                if row[4] == 'True':
+                    row[4] = 'False'
+                elif row[4] == 'False':
+                    row[4] = 'True'
+                sta = row[4]
             data.append(row)
     
-    with open(RIFLE_DATA_PATH, mode='w', newline='', encoding='utf-8') as file:
+    with open(WEAPON_DATA_PATH, mode='w', newline='', encoding='utf-8') as file:
         writer = csv.writer(file)
         writer.writerows(data)
 
@@ -84,19 +85,21 @@ def submit():
     st.session_state.widget = ""
 
 #read data
-df_rifle = pd.read_csv(RIFLE_DATA_PATH)
+df_weapon = pd.read_csv(WEAPON_DATA_PATH)
 df_person = pd.read_csv(PERSON_DATA_PATH)
-df_rifle = df_rifle.astype(str)
+df_weapon = df_weapon.astype(str)
 df_person = df_person.astype(str)
 
 try:
-    df_history = pd.read_csv(HISTORY_DATA)
+    df_history = pd.read_csv(HISTORY_DATA_PATH)
     df_history = df_history.astype(str)
 except:
     df_history = pd.DataFrame(columns=[
-        'rifle_barcode', 
-        'rifle_respon_name', 
-        'rifle_respon_id', 
+        'weapon_barcode', 
+        'weapon_id', 
+        'weapon_type', 
+        'weapon_respon_name', 
+        'weapon_respon_id', 
         'person_id', 
         'person_barcode', 
         'person_name', 
@@ -106,8 +109,13 @@ except:
     
 df_history = df_history.sort_values(by='timestamp',ascending=False)
 
-rifles_in = df_rifle[df_rifle['instock'] == 'True']['rifle_barcode'].tolist()
-rifles_out = df_rifle[df_rifle['instock'] == 'False']['rifle_barcode'].tolist()
+unique_types = list(df_weapon['type'].unique())
+
+weapons_ins = {}
+weapons_outs = {}
+for t in unique_types:
+    weapons_ins[t] = df_weapon[(df_weapon['instock'] == 'True') & (df_weapon['type'] == t)]['weapon_barcode'].tolist()
+    weapons_outs[t] = df_weapon[(df_weapon['instock'] == 'False') & (df_weapon['type'] == t)]['weapon_barcode'].tolist()
 
 # input text
 st.sidebar.text_input("scan barcode", key="widget", on_change=submit)
@@ -129,33 +137,35 @@ st.components.v1.html(
 )
 
 ## check text input
-current_rifle = df_rifle[df_rifle['rifle_barcode']==input_text]
+current_weapon = df_weapon[df_weapon['weapon_barcode']==input_text]
 try:
-    df_history_current_rifle_barcode = df_history[df_history['rifle_barcode']==st.session_state.current_rifle['rifle_barcode']]
+    df_history_current_weapon_barcode = df_history[df_history['weapon_barcode']==st.session_state.current_weapon['weapon_barcode']]
 except:
-    df_history_current_rifle_barcode = df_history[df_history['rifle_barcode']=='']
+    df_history_current_weapon_barcode = df_history[df_history['weapon_barcode']=='']
 current_person = df_person[df_person['person_barcode']==input_text]
-if current_rifle.shape[0]==1:
-    st.session_state.current_rifle = dict(current_rifle.iloc[0])
+if current_weapon.shape[0]==1:
+    st.session_state.current_weapon = dict(current_weapon.iloc[0])
 if current_person.shape[0]==1:
     st.session_state.current_person = dict(current_person.iloc[0])
 
 # history
 if input_text == BARCODE_HISTORY or input_text == '1':
     st.title('ประวัติการเบิกจ่ายอาวุธ')
-    if df_history_current_rifle_barcode.shape[0] != 0:
+    if st.session_state.current_weapon:
 
         ims = []
-        for i in df_history_current_rifle_barcode['timestamp']:
+        for i in df_history_current_weapon_barcode['timestamp']:
             image_path = 'data/images/' + i + '.jpg'
             try:
                 im = img_to_base64(image_path)
                 ims.append(im)
             except:
                 ims.append(image_path)
-        df_history_current_rifle_barcode['image'] = ims
+        df_history_current_weapon_barcode['image'] = ims
+        cols = ['timestamp'] + [col for col in df_history_current_weapon_barcode.columns if col != 'timestamp']
+        df_history_current_weapon_barcode = df_history_current_weapon_barcode[cols]
         st.data_editor(
-            df_history_current_rifle_barcode,
+            df_history_current_weapon_barcode,
             column_config={
                 "image": st.column_config.ImageColumn(
                     "Preview Image", help="Streamlit app preview screenshots"
@@ -173,6 +183,8 @@ if input_text == BARCODE_HISTORY or input_text == '1':
             except:
                 ims.append(image_path)
         df_history['image'] = ims
+        cols = ['timestamp'] + [col for col in df_history.columns if col != 'timestamp']
+        df_history = df_history[cols]
         st.data_editor(
             df_history,
             column_config={
@@ -186,59 +198,111 @@ if input_text == BARCODE_HISTORY or input_text == '1':
 # status
 elif input_text == BARCODE_STATUS or input_text == '2':
     st.title('สถานภาพปัจจุบัน')
-    col1, col2 = st.columns(2)
-    with col1:
-        st.subheader(f'อาวุธในคลัง {len(rifles_in)} กระบอก')
-        st.write(df_rifle[df_rifle['instock'] == 'True'])
-    with col2:
-        st.subheader(f'อาวุธนอกคลัง {len(rifles_out)} กระบอก')
-        st.write(df_rifle[df_rifle['instock'] == 'False'])
+    cols = st.columns(len(unique_types))
+
+    for i,col in enumerate(cols):
+        with col:
+            st.header(unique_types[i])
+            st.subheader(f'อาวุธในคลัง {len(weapons_ins[unique_types[i]])} กระบอก')
+
+            df_in = df_weapon[(df_weapon['instock'] == 'True') & (df_weapon['type'] == unique_types[i])]
+
+            person_respon_names = []
+            for id in df_in['person_respon_id']:
+                prn = df_person[df_person['person_id']==id].iloc[0]['name']
+                person_respon_names.append(prn)
+            df_in['person_respon_name'] = person_respon_names
+
+            df_in.reset_index(drop=True, inplace=True)  # Reset the index
+            df_in.index = df_in.index + 1  # Adjust index to start from 1
+
+            df_in = df_in[['weapon_id','person_respon_name']]
+            st.write(df_in)
+
+            st.subheader(f'อาวุธนอกคลัง {len(weapons_outs[unique_types[i]])} กระบอก')
+            df_out = df_weapon[(df_weapon['instock'] == 'False') & (df_weapon['type'] == unique_types[i])]
+            person_respon_names = []
+            for id in df_out['person_respon_id']:
+                prn = df_person[df_person['person_id']==id].iloc[0]['name']
+                person_respon_names.append(prn)
+            df_out['person_respon_name'] = person_respon_names
+            df_out.reset_index(drop=True, inplace=True)  # Reset the index
+            df_out.index = df_out.index + 1  # Adjust index to start from 1
+
+            try:
+                #append timestamp and person data from history.csv
+                ts = []
+                pn = []
+                for wid in df_out['weapon_id']:
+                    filtered_data = df_history[df_history['weapon_id'] == wid]
+                    last_transaction = filtered_data.sort_values(by='timestamp', ascending=False)
+                    ts.append(last_transaction.iloc[0]['timestamp'])
+                    pn.append(last_transaction.iloc[0]['person_name'])
+                df_out['timestamp'] = ts
+                df_out['person_name'] = pn
+                df_out = df_out[['weapon_id','person_respon_name','person_name','timestamp']]
+
+            except:
+                df_out = df_out[['weapon_id','person_respon_name']]
+
+            st.write(df_out)
 
 # reset 
 elif input_text == BARCODE_RESET or input_text == 'r':
-    df_rifle['instock'] = 'True'
-    df_rifle.to_csv(RIFLE_DATA_PATH, index=False)
+    df_weapon['instock'] = 'True'
+    df_weapon.to_csv(WEAPON_DATA_PATH, index=False)
     st.title('reset complete!!')
 
 # main
 else:
     #clear current weapon and person
     if input_text == BARCODE_CLEAR or input_text == 'c':
-        st.session_state.current_rifle = ''
+        st.session_state.current_weapon = ''
         st.session_state.current_person = ''
 
     # head status
     col1, col2, col3 = st.columns([1,8,1])
     with col1:
-        st.image("data/logo.png", use_column_width=True)
+        st.image(LOGO_PATH, use_column_width=True)
     with col2:
         example_header(UNIT_NAME)
     with col3:
         pass
-     
-    st.title('ระบบเบิกจ่ายอาวุธอัตโนมัติ')
-    col1, col2, col3 = st.columns(3)
-    col1.subheader(f':blue[สถานะอาวุธในคลัง]')
-    col1.header(f':blue[{len(rifles_in)} กระบอก]')
-    col2.subheader(f':red[สถานะอาวุธนอกคลัง]')
-    col2.header(f':red[{len(rifles_out)} กระบอก]')
-    col3.subheader(f'รวม')
-    col3.header(f'{len(rifles_in) + len(rifles_out)} กระบอก')
+
+    st.markdown("""---""")
+    if len(unique_types)==1:
+        col1, col2, col3, col4 = st.columns([5,4,3,4])
+        col1.title(f':blue[{unique_types[0]}]')
+        col2.title(f':blue[ยอดเดิม]')
+        col2.title(f':blue[{len(weapons_ins[unique_types[0]]) + len(weapons_outs[unique_types[0]])} กระบอก]')
+        col3.title(f':red[เบิก]')
+        col3.title(f':red[{len(weapons_outs[unique_types[0]])} กระบอก]')
+        col4.title(f'คงเหลือ')
+        col4.title(f'{len(weapons_ins[unique_types[0]])} กระบอก')
+
+    else:
+        for t in unique_types:
+
+            col1, col2, col3, col4 = st.columns([5,4,3,4])
+            col1.title(f':blue[{t}]')
+            col2.title(f':blue[ยอดเดิม {len(weapons_ins[t]) + len(weapons_outs[t])}]')
+            col3.title(f':red[เบิก {len(weapons_outs[t])}]')
+            col4.title(f'คงเหลือ {len(weapons_ins[t])}')
 
     st.markdown("""---""")
 
-    # current rifle person id
+    # current weapon person id
     col11, col22 = st.columns(2)
     with col11:
         st.subheader(':green[อาวุธ]')
-        if st.session_state.current_rifle:
-            st.title(f":red[{st.session_state.current_rifle['rifle_id']}]")
-            rifle_respon_id = st.session_state.current_rifle['person_id']
+        if st.session_state.current_weapon:
+            st.title(f":red[{st.session_state.current_weapon['weapon_id']}]")
+            weapon_respon_id = st.session_state.current_weapon['person_respon_id']
             try:
-                rifle_respon_name = df_person[df_person['person_id']==rifle_respon_id].iloc[0]['name']
+                weapon_respon_name = df_person[df_person['person_id']==weapon_respon_id].iloc[0]['name']
             except:
-                rifle_respon_name = 'ไม่ปรากฎชื่อผู้รับผิดชอบ'
-            st.write(f"{rifle_respon_name} ({rifle_respon_id})")
+                weapon_respon_name = 'ไม่ปรากฎชื่อผู้รับผิดชอบ'
+            st.write(f"{weapon_respon_name} ({weapon_respon_id})")
 
         else:
             st.write('--')
@@ -253,19 +317,19 @@ else:
     st.markdown("""---""")
 
     #show current status text
-    sta = 'โปรดแสกนอาวุธ และบัตรประจำตัว'
-    if st.session_state.current_rifle and st.session_state.current_person:
-        sta = 'สำเร็จ!!'
-    elif st.session_state.current_rifle:
-        sta = 'โปรดแสกนบัตรประจำตัว'
+    sta = 'โปรดสแกนอาวุธ และบัตรประจำตัว'
+    if st.session_state.current_weapon and st.session_state.current_person:
+        sta = 'บันทึกสำเร็จ!!'
+    elif st.session_state.current_weapon:
+        sta = 'โปรดสแกนบัตรประจำตัว'
     elif st.session_state.current_person:
-        sta = 'โปรดแสกนอาวุธ'
+        sta = 'โปรดสแกนอาวุธ'
 
     example('#ff6320','#eaff2f','#000000',sta)
 
     # complete state
-    if st.session_state.current_rifle and st.session_state.current_person:
-        isin = toggle_instock(st.session_state.current_rifle['rifle_barcode'])
+    if st.session_state.current_weapon and st.session_state.current_person:
+        isin = toggle_instock(st.session_state.current_weapon['weapon_barcode'])
         if isin == 'True':
             action = 'in'
         else:
@@ -273,9 +337,11 @@ else:
 
         #save data to csv
         data = {
-            'rifle_barcode' : st.session_state.current_rifle['rifle_barcode'],
-            'rifle_respon_name' : rifle_respon_name,
-            'rifle_respon_id' : rifle_respon_id,
+            'weapon_barcode' : st.session_state.current_weapon['weapon_barcode'],
+            'weapon_id' : st.session_state.current_weapon['weapon_id'],
+            'weapon_type' : st.session_state.current_weapon['type'],
+            'weapon_respon_name' : weapon_respon_name,
+            'weapon_respon_id' : weapon_respon_id,
             'person_id' : st.session_state.current_person['person_id'],
             'person_barcode' : st.session_state.current_person['person_barcode'],
             'person_name' : st.session_state.current_person['name'],
@@ -283,7 +349,7 @@ else:
             'action' : action
         }
 
-        file_path = 'data/data_history.csv'
+        file_path = HISTORY_DATA_PATH
         file_exists = os.path.isfile(file_path)
         with open(file_path, mode='a', newline='') as file:
             writer = csv.writer(file)
@@ -292,9 +358,9 @@ else:
             writer.writerow(data.values())
 
         # if st.button("Foo"):
-        st.session_state.current_rifle = ''
+        st.session_state.current_weapon = ''
         st.session_state.current_person = ''
-        st.session_state.history_current_rifle_barcode = ''
+        st.session_state.history_current_weapon_barcode = ''
         st.session_state.input_text = ''
 
         #capture image
