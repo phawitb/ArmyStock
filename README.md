@@ -40,8 +40,8 @@ code.gs ::
 function doGet(e) {
   var action = e.parameter.action;
 
-  if (action == 'getAllRifleData') {
-    return getAllRifleData();  // Return all rifle data
+  if (action == 'getAllWeaponData') {
+    return getAllWeaponData();  // Return all weapon data
   }
   
   if (action == 'getAllPersonData') {
@@ -49,20 +49,21 @@ function doGet(e) {
   }
 }
 
-// Function to retrieve all rifle data
-function getAllRifleData() {
-  var sheet_rifle = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('rifle_data');
-  var rows = sheet_rifle.getRange(2, 1, sheet_rifle.getLastRow() - 1, sheet_rifle.getLastColumn()).getValues();
+// Function to retrieve all weapon data
+function getAllWeaponData() {
+  var sheet_weapon = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('weapon_data');
+  var rows = sheet_weapon.getRange(2, 1, sheet_weapon.getLastRow() - 1, sheet_weapon.getLastColumn()).getValues();
   var data = [];
 
   // Loop through rows and build JSON object for each
   for (var i = 0; i < rows.length; i++) {
     var row = rows[i];
     var record = {
-      "rifle_barcode": row[0],
-      "rifle_id": row[1],
-      "person_id": row[2],
-      "instock": row[3]
+      "weapon_barcode": row[0],
+      "weapon_id": row[1],
+      "type": row[2],
+      "person_respon_id": row[3],
+      "instock": row[4]
     };
     data.push(record);
   }
@@ -91,5 +92,6 @@ function getAllPersonData() {
   var result = JSON.stringify(data);
   return ContentService.createTextOutput(result).setMimeType(ContentService.MimeType.JSON);
 }
+
 
 ```
