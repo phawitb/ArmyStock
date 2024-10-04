@@ -67,7 +67,7 @@ import pandas as pd
 import yaml
 
 def read_config_yaml(file_path):
-    with open(file_path, 'r') as config_file:
+    with open(file_path, 'r',encoding='utf-8') as config_file:
         config = yaml.safe_load(config_file)
     return config
 

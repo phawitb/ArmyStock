@@ -24,7 +24,7 @@ st.markdown("""
         """, unsafe_allow_html=True)
 
 def read_config_yaml(file_path):
-    with open(file_path, 'r') as config_file:
+    with open(file_path, 'r',encoding='utf-8') as config_file:
         config = yaml.safe_load(config_file)
     return config
 
@@ -351,7 +351,7 @@ else:
 
         file_path = HISTORY_DATA_PATH
         file_exists = os.path.isfile(file_path)
-        with open(file_path, mode='a', newline='') as file:
+        with open(file_path, mode='a', newline='',encoding='utf-8') as file:
             writer = csv.writer(file)
             if not file_exists:
                 writer.writerow(data.keys())  # Write the header row
@@ -364,17 +364,20 @@ else:
         st.session_state.input_text = ''
 
         #capture image
-        cap = cv2.VideoCapture(0)
-        if not cap.isOpened():
-            print("Error: Could not open camera.")
-            exit()
-        ret, frame = cap.read()
-        if ret:
-            directory = 'data/images'
-            if not os.path.exists(directory):
-                os.makedirs(directory)
-            cv2.imwrite(f"{directory}/{data['timestamp']}.jpg", frame)
-        cap.release()
+        try:
+            cap = cv2.VideoCapture(0)
+            if not cap.isOpened():
+                print("Error: Could not open camera.")
+                exit()
+            ret, frame = cap.read()
+            if ret:
+                directory = 'data/images'
+                if not os.path.exists(directory):
+                    os.makedirs(directory)
+                cv2.imwrite(f"{directory}/{data['timestamp']}.jpg", frame)
+            cap.release()
+        except:
+            pass
 
         #voice
         pygame.mixer.init()
